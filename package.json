@@ -1,0 +1,21 @@
+{
+  "name": "grab404firefox",
+  "version": "1.0.0",
+  "description": "Makes screenshots of 404 sites",
+  "main": "grab404.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "keywords": [
+    "404"
+  ],
+  "author": "Treppenhouse",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "selenium-webdriver": "^3.5.0"
+  }
+}
