@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Makes screenshots of 404 sites",
   "main": "grab404.js",
+  "private": true,
   "scripts": {
-    "test": "test"
+    "start": "node grab404.js"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,7 @@
   "author": "Treppenhouse",
   "license": "GPL-3.0",
   "dependencies": {
+    "argparse": "^1.0.10",
     "selenium-webdriver": "^3.5.0"
   }
 }
