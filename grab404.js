@@ -1,7 +1,14 @@
+// file system
 const { writeFile } = require('fs');
 const { mkdirp } = require('mkdirp');
 const getDirName = require('path').dirname;
 
+// image processing
+const graphicsMagick = require('gm')
+const Readable = require('stream').Readable
+const Writable = require('stream').Writable
+
+// selenium webriver
 const {Builder, promise, until} = require('selenium-webdriver');
 const firefox = require('selenium-webdriver/firefox');
 const promiseUtil = require('selenium-webdriver/lib/promise');
@@ -9,6 +16,7 @@ const promiseUtil = require('selenium-webdriver/lib/promise');
 // The argument parser
 const {ArgumentParser, HelpFormatter} = require('argparse');
 const {CustomHelpFormatter} = require('./customHelpFormatter.js'); 
+
 
 console.log('Starting grab404...');
 
@@ -99,6 +107,36 @@ var calculateOutputFilename = function(url) {
     return outputFileName;
 };
 
+var cropImage = function(base64ImageString, callback) {
+	var readStream = new Readable();
+
+
+
+	graphicsMagick(readStream).crop(1024, 200, 0, 0);
+
+	
+
+	var data = '';
+	readStream.on('readable', () => {
+		console.log('READABLE: ');
+		var res = readStream.read();
+		console.log('RES: '+res);
+	});
+	readStream.on('data', (chunk) => {
+		console.log('DATA: '+chunk);
+    	data += chunk;
+	});
+
+	readStream.on('end', () => {
+	    console.log('END: ');
+	    callback(data);
+	});
+
+	readStream._read = () => {};
+	readStream.push(base64ImageString);
+	readStream.push(null);
+} 
+
 let urlIndex = 0;
 
 var retrieveNext = function() {
@@ -112,6 +150,13 @@ var retrieveNext = function() {
 
 	let outputFileName = calculateOutputFilename(url);
 	let outputDirectoryName = getDirName(outputFileName)
+	mkdirp(outputDirectoryName,	function (error) {
+    if (error){
+		console.error('ERROR CREATING DIRECTORY: '+error);
+		afterLast();
+		return;
+    } 
+
 	// TODO: why www here?
 	var fullUrl = "http://www." + url + "/reddit";
 
@@ -127,22 +172,18 @@ var retrieveNext = function() {
 			retrieveNext();
 		})
 	.then(
-		data => {
-			mkdirp(outputDirectoryName,	function (error) {
-			    if (error){
-					console.error('ERROR CREATING DIRECTORY: '+error);
-					retrieveNext();
-					return;
-			    } 
-		    	writeFile(outputFileName, data, 'base64', (error) => {
+		base64ImageString => {
+			cropImage(base64ImageString, croppedBase64String => {
+				writeFile(outputFileName, croppedBase64String, 'base64', (error) => {
 					if(error) {
 	  					console.error('ERROR WRITING FILE: '+error);
 	  				} else { 
 	  					console.log('FILE WRITTEN '+outputFileName)
 	  				}
 	  				retrieveNext();
-				});
+	  			});
 			});
+		});
 		},
 		error => {
 			console.error('ERROR TAKING SCREENSHOT: '+error);

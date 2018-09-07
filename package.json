@@ -18,6 +18,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "argparse": "^1.0.10",
+    "gm": "^1.23.1",
     "selenium-webdriver": "^3.5.0"
   }
 }
