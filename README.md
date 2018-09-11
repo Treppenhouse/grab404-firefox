@@ -1,5 +1,5 @@
 # Prerequisites
-1. `firefox` need to be installed and added to the `PATH`
+1. `geckodriver` need to be installed and added to the `PATH`
 2. `node.js` need to be installed
 
 # Usage

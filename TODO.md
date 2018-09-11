@@ -6,3 +6,4 @@
 - it should also work without firefox beeing installed (downloading a binary on demand)
 - code cleanup and documentation
 - support something like `echo www.google.com | node grab404.js`
+- use a better "unlikely" search string and make it configurable
