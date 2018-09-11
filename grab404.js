@@ -1,5 +1,5 @@
 // file system
-const { writeFile } = require('fs');
+const fs = require('fs');
 const { mkdirp } = require('mkdirp');
 const getDirName = require('path').dirname;
 
@@ -10,6 +10,7 @@ const Writable = require('stream').Writable
 
 // selenium webriver
 const {Builder, promise, until} = require('selenium-webdriver');
+const command = require('selenium-webdriver/lib/command');
 const firefox = require('selenium-webdriver/firefox');
 const promiseUtil = require('selenium-webdriver/lib/promise');
 
@@ -20,7 +21,7 @@ const {CustomHelpFormatter} = require('./customHelpFormatter.js');
 
 console.log('Starting grab404...');
 
-const outputFolderDefault = './out';
+const outputFolderDefault = 'out';
 
 
 let parser = new ArgumentParser(
@@ -80,7 +81,10 @@ if(urlString != null) {
 	urls = urlString.split(',');
 }
 else {
-	// TODO read urls from file
+	let completeString = fs.readFileSync(filename).toString();
+	console.log('COMPLETE FILE CONTENT: '+completeString);
+	urls = completeString.replace(/\r\n/g,'\n').split('\n');
+
 }
 console.log('URLs:');
 urls.forEach(url => console.log('\t'+url));
@@ -88,10 +92,21 @@ urls.forEach(url => console.log('\t'+url));
 
 const driver = new Builder()
 	.forBrowser('firefox')
-	.setFirefoxOptions(new firefox.Options().headless())
+	.setFirefoxOptions(new firefox.Options()
+		.headless()
+		.windowSize({height:1080, width: 1920}))
 	.build();
 
+const commandWindowSize = new command.Command(command.Name.SET_WINDOW_SIZE);
+commandWindowSize.setParameter('windowHandle','current');
+commandWindowSize.setParameter('width',1920);
+commandWindowSize.setParameter('height',1080);
+driver.schedule(commandWindowSize);
+
+
 console.log('Firefox initialized...')
+
+
 
 
 /**
@@ -103,39 +118,9 @@ console.log('Firefox initialized...')
 var calculateOutputFilename = function(url) {
     var indexString = ("0" + urlIndex).slice(-2);
     strippedUrl = url.replace("/", "")
-    var outputFileName = './out/' + indexString + '.' + strippedUrl + '.png';
+    var outputFileName = './'+outputFolder+'/' + indexString + '.' + strippedUrl + '.png';
     return outputFileName;
 };
-
-var cropImage = function(base64ImageString, callback) {
-	var readStream = new Readable();
-
-
-
-	graphicsMagick(readStream).crop(1024, 200, 0, 0);
-
-	
-
-	var data = '';
-	readStream.on('readable', () => {
-		console.log('READABLE: ');
-		var res = readStream.read();
-		console.log('RES: '+res);
-	});
-	readStream.on('data', (chunk) => {
-		console.log('DATA: '+chunk);
-    	data += chunk;
-	});
-
-	readStream.on('end', () => {
-	    console.log('END: ');
-	    callback(data);
-	});
-
-	readStream._read = () => {};
-	readStream.push(base64ImageString);
-	readStream.push(null);
-} 
 
 let urlIndex = 0;
 
@@ -160,7 +145,7 @@ var retrieveNext = function() {
 	// TODO: why www here?
 	var fullUrl = "http://www." + url + "/reddit";
 
-	console.log('BEFORE GET...'+urls);
+	console.log('BEFORE GET...'+fullUrl);
 
 	driver.get(fullUrl)
 	.then(
@@ -173,16 +158,14 @@ var retrieveNext = function() {
 		})
 	.then(
 		base64ImageString => {
-			cropImage(base64ImageString, croppedBase64String => {
-				writeFile(outputFileName, croppedBase64String, 'base64', (error) => {
-					if(error) {
-	  					console.error('ERROR WRITING FILE: '+error);
-	  				} else { 
-	  					console.log('FILE WRITTEN '+outputFileName)
-	  				}
-	  				retrieveNext();
-	  			});
-			});
+			fs.writeFile(outputFileName, base64ImageString, 'base64', (error) => {
+				if(error) {
+  					console.error('ERROR WRITING FILE: '+error);
+  				} else { 
+  					console.log('FILE WRITTEN '+outputFileName)
+  				}
+  				retrieveNext();
+  			});
 		});
 		},
 		error => {
