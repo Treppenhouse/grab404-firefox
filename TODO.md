@@ -5,3 +5,4 @@
 - make the windowsize configurable
 - it should also work without firefox beeing installed (downloading a binary on demand)
 - code cleanup and documentation
+- support something like `echo www.google.com | node grab404.js`
