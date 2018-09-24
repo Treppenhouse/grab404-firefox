@@ -1,3 +1,4 @@
+
 // file system
 const fs = require('fs');
 const { mkdirp } = require('mkdirp');
@@ -14,66 +15,14 @@ const command = require('selenium-webdriver/lib/command');
 const firefox = require('selenium-webdriver/firefox');
 const promiseUtil = require('selenium-webdriver/lib/promise');
 
-// The argument parser
-const {ArgumentParser, HelpFormatter} = require('argparse');
-const {CustomHelpFormatter} = require('./customHelpFormatter.js'); 
+// argument parser
+const { parseCliArguments } = require("./argumentParser");
 
 
 console.log('Starting grab404...');
 
-const outputFolderDefault = 'out';
-const prefixDefault = 'http://';
-const postfixDefault = '/grab404';
+let args = parseCliArguments();
 
-
-let parser = new ArgumentParser(
-	{
-		addHelp: true,
-		description: 'This program can be used to capture screenshot of the 404 pages of websites.\n \
-			The list of URLs can be provided either by file or by CLI argument.',
-		// TODO: all whitespace characters are trimmed :( must override own HelpFormatter
-		// Read about this: https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Inheritance
-		formatterClass: CustomHelpFormatter,
-		epilog: 'Examples:\n \
-  			node grab404.js -f cities.txt\n \
-			node grab404.js --urls www.github.com,wikipedia.org -o ../output/screenshots'
-	});
-
-parser.addArgument(
-	['-f','--filename'],
-	{
-		help: 'Text file containing the URLs separated by a new line'
-	});
-
-parser.addArgument(
-	['-u', '--urls'],
-	{
-		help: 'URLs separated by commas'
-	});
-
-parser.addArgument(
-	['-o', '--outputFolder'],
-	{
-		help: 'Output folder where the screenshots will be placed.\n \
-			Default: '+outputFolderDefault,
-		defaultValue: outputFolderDefault
-	});
-parser.addArgument(
-	['--prefix'],
-	{
-		help: 'String that the URLs are prefixed with.\n \
-			Default: '+prefixDefault,
-		defaultValue: prefixDefault
-	});
-parser.addArgument(
-	['--postfix'],
-	{
-		help: 'String that the URLs are postfixed with.\n \
-			Default: '+postfixDefault,
-		defaultValue: postfixDefault
-	});
-
-let args = parser.parseArgs();
 let outputFolder = args.outputFolder;
 let filename = args.filename;
 let urlString = args.urls;
@@ -85,16 +34,7 @@ console.log('Filename: '+filename);
 console.log('URL string: '+urlString);
 
 
-if(filename == null && urlString == null) {
-	console.error('ERROR: Either filename or urls must be provided!!\n')
-	parser.printHelp();
-	process.exit();
-}
-if(filename != null && urlString != null) {
-	console.error('ERROR: Must provide EITHER filename OR urls. Not both!!\n')
-	parser.printHelp();
-	process.exit();	
-}
+
 
 let urls = [];
 if(urlString != null) {
