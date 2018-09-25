@@ -5,7 +5,8 @@
   "main": "grab404.js",
   "private": true,
   "scripts": {
-    "start": "node grab404.js"
+    "start": "node grab404.js",
+    "test": "node_modules/mocha/bin/mocha test"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,7 @@
     "argparse": "^1.0.10",
     "gm": "^1.23.1",
     "mkdirp": "^0.5.1",
+    "mocha": "^5.2.0",
     "selenium-webdriver": "^3.5.0"
   }
 }
